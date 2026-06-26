@@ -1,21 +1,76 @@
-def map_event(label):
-    mapping = {
-        "explosion": "BIG_BOOM",
-        "gunshot": "PISTOL_SHOT",
-        "glass breaking": "METALLIC_HIT",
-        "metal impact": "SWORD_CLASH",
-        "car engine": "ENGINE_IDLE",
-        "car crash": "CAR_CRASH",
-        "footsteps": "FOOTSTEP_LIGHT",
-        "heartbeat": "HEARTBEAT_NORMAL",
-        "rain": "RAIN_DROPLET",
-        "thunder": "THUNDER",
-        "wind": "WIND_GUST",
-        "train": "TRAIN_IMPACT",
-        "airplane": "AIRPLANE_CRASH",
-        "helicopter": "HELICOPTER_CRASH",
-        "speech": "SILENCE",
-        "music": "SILENCE",
-    }
+GROUPS = {
+    "ENGINE_REVVING": [
+        "engine",
+        "car engine",
+        "engine revving",
+        "engine idling",
+        "vehicle engine",
+        "sports car",
+        "race car",
+        "car driving",
+    ],
 
-    return mapping.get(label, "SILENCE")
+    "WHOOSH": [
+        "car passing",
+        "tire screech",
+        "car drifting",
+    ],
+
+    "METALLIC_HIT": [
+        "metal impact",
+        "glass breaking",
+        "car crash",
+    ],
+
+    "BIG_BOOM": [
+        "explosion",
+    ],
+
+    "THUNDER": [
+        "thunder",
+    ],
+
+    "WIND_GUST": [
+        "wind",
+    ],
+
+    "SMALL_CLICK": [
+        "click",
+    ],
+
+    "FOOTSTEP_HEAVY": [
+        "footsteps",
+    ],
+
+    "PISTOL_SHOT": [
+        "gunshot",
+    ],
+}
+
+
+def map_scores(predictions):
+    scores = {}
+
+    for label, conf in predictions:
+        text = label.lower()
+
+        for event, names in GROUPS.items():
+            if any(name in text for name in names):
+                scores[event] = scores.get(event, 0.0) + conf
+                break
+
+    if not scores:
+        return {}
+
+    best = max(scores.values())
+
+    # reject weak predictions
+    if best < 0.45:
+        return {}
+
+    if len(scores) > 1:
+        values = sorted(scores.values(), reverse=True)
+        if values[0] - values[1] < 0.10:
+            return {}
+
+    return scores

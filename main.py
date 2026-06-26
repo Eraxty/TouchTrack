@@ -1,47 +1,67 @@
 import os
-import librosa
 
 from audio import extract_audio, load_audio
 from clap_detector import detect
-from mapper import map_event
+from mapper import map_scores
+from temporal_filter import smooth_events
 
-video = "movie.mp4"
-audio = "temp.wav"
+VIDEO = "movie.mp4"
+AUDIO = "temp.wav"
+OUTPUT = "output.srt"
 
+SR = 48000
+WINDOW = 0.25
+
+
+def format_time(t):
+    h = int(t // 3600)
+    m = int((t % 3600) // 60)
+    s = int(t % 60)
+    ms = int((t - int(t)) * 1000)
+    return f"{h:02}:{m:02}:{s:02},{ms:03}"
+
+
+def write_srt(events):
+    with open(OUTPUT, "w", encoding="utf-8") as f:
+        for i, e in enumerate(events, 1):
+            f.write(f"{i}\n")
+            f.write(
+                f"{format_time(e['start'])} --> "
+                f"{format_time(e['end'])} "
+                f"{e['tag']} "
+                f"{e['score']:.2f}\n"
+            )
+            f.write(f"Detected: {e['tag']}\n\n")
 
 def main():
-    if not os.path.exists(video):
-        print("video not found")
+    if not os.path.exists(VIDEO):
+        print("Video not found.")
         return
 
-    extract_audio(video, audio)
-    samples, sr = load_audio(audio)
+    extract_audio(VIDEO, AUDIO, SR)
+    audio, sr = load_audio(AUDIO, SR)
+    size = int(sr * WINDOW)
+    frames = []
 
-    samples = librosa.resample(samples,orig_sr=sr,target_sr=48000)
-    sr = 48000
+    for i in range(0, len(audio) - size + 1, size):
+        clip = audio[i:i + size]
+        time = i / sr
+        scores = map_scores(detect(clip, sr))
+        frames.append({
+            "time": time,
+            "scores": scores,
+        })
 
-    clip_length = sr * 3
-    start = 0
-
-    while start < len(samples):
-        print(f"\ntime {start / sr:.1f}s")
-        clip = samples[start:start + clip_length]
-        predictions = detect(clip, sr)
-
-        best_label, confidence = predictions[0]
-
-        if confidence >= 0.75:
-            tag = map_event(best_label)
+        if scores:
+            print(f"{time:6.2f}s -> {max(scores, key=scores.get)}")
         else:
-            tag = "SILENCE"
+            print(f"{time:6.2f}s -> SILENCE")
 
-        for label, score in predictions:
-            print(f"  {label:<25} {score:.2f}")
+    events = smooth_events(frames, len(audio) / sr)
+    write_srt(events)
 
-        print(f"  -> {tag}")
-        start += clip_length
-
-    os.remove(audio)
+    if os.path.exists(AUDIO):
+        os.remove(AUDIO)
 
 if __name__ == "__main__":
     main()
