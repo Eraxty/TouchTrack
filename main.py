@@ -5,7 +5,7 @@ from clap_detector import detect
 from mapper import map_scores
 from temporal_filter import smooth_events
 
-VIDEO = "movie.mp4"
+VIDEO = "video.mp4"
 AUDIO = "temp.wav"
 OUTPUT = "output.srt"
 
@@ -31,7 +31,7 @@ def write_srt(events):
                 f"{e['tag']} "
                 f"{e['score']:.2f}\n"
             )
-            f.write(f"Detected: {e['tag']}\n\n")
+            f.write("\n")
 
 def main():
     if not os.path.exists(VIDEO):
