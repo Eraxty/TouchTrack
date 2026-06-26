@@ -2,12 +2,11 @@
 Touchtrack generates haptics for a video as an srt(like a subtile file), u can only open the srt in the modded vlc studio which is given in the releases
 
 ## Why I Built This
+This started when i was watching the F1 movie in a 4DX thetre, feeling that haptics gave a massive immersion boost
 
-The idea for TouchTrack started while I was watching the F1 movie in a 4DX. Feeling haptics effects alongside the movie gave a massive immersion boost
+Later, Apple released its haptic trailer for the F1 movie, which showed how haptics could be used in movies on phone. initially i didnt had time to build it but 1 year later i finally decided to build it and here it is.
 
-Later, Apple released its haptic trailer for the F1 movie, which showed how haptics could be used in movies on phone. That gave me an idea, and I finally decided to build it.
-
-The goal of TouchTrack is simple: analyze a video's events, generate haptic events automatically like u put a video and it automatically generates subtitles like that,u can play them back through a modified version of VLC because no other app supports haptics like that so i built it usign using standard `.srt` subtitle files, The haptics work just like subtitles.
+The goal is simple: analyze a video's events, generate haptic events automatically like u put a video and it automatically generates subtitles like that,u can play them back through a modified version of VLC because no other app supports haptics like that so i built it usign using standard `.srt` subtitle files, The haptics work just like subtitles.
 
 ## How it works 
 - Detects events using CLAP
@@ -17,22 +16,7 @@ The goal of TouchTrack is simple: analyze a video's events, generate haptic even
 
 
 ```
-Video
-   │
-   ▼
-Extract audio
-   │
-   ▼
-CLAP
-   │
-   ▼
-Mapper
-   │
-   ▼
-Temporal Filter
-   │
-   ▼
-output.srt
+Video -> Extract audio ->CLAP ->Mapper ->Temporal Filter ->output.srt
 ```
 
 ---
@@ -107,16 +91,18 @@ The generated srt will be saved as
 ```
 output.srt
 ```
+
 Now play ur video in the modded vlc and add subtitle track as the srt 
+
 ---
 
 ## Current Limitations
 
-TouchTrack currently uses CLAP for zero-shot audio classification.
+TouchTrack currently uses CLAP for event detetection.
 
 while clap is good it sucks on this kind of stuff 
 
-in future i wwanna replace CLAP with dedicated audio event detection models which will give better detection
+in future i wwanna replace CLAP with another detection models to give better detection
 
 ---
 ## VLC Android
@@ -131,12 +117,15 @@ That fork targets an older version of VLC Android and no longer builds correctly
 Instructions for building the modified VLC player are in the vlc directory.
 
 ## Building the vlc 
+
 U can find the readme on how to build vlc in the vlc folder
 ---
 
 ## AI Usage
+
 Ai was used in making haptic functions for vlc as i wanted haptic support for vlc 
 ---
 
 ## License
+
 MIT
